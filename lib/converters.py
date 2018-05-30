@@ -3,7 +3,7 @@ import pandas
 
 # converts values in input_file from ohm to microseconds and saves them to output_file
 def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
-    skin_data = pandas.read_csv(input_file, sep=sep, dtype={"timestamp": int, "value": float})
+    skin_data = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
 
     result = []
     for i in skin_data.values:
@@ -22,7 +22,7 @@ def __ohm_to_microsiemens_value(ohm):
 
 # converts values in input_file from nanowatt to bpm and saves them to output_file
 def nanowatt_to_beats(input_file, output_file):
-    heart = pandas.read_csv(input_file, sep=';', dtype={"timestamp": int, "value": float})
+    heart = pandas.read_csv(input_file, sep=';', dtype={"value": float}, error_bad_lines=False, warn_bad_lines=False)
 
     extremes = __get_local_extremes(heart.values)
     diastolic_points = __get_diastolic_points(extremes)
@@ -34,7 +34,7 @@ def nanowatt_to_beats(input_file, output_file):
 
 # converts values in input_file from microvolt to bpm and saves them to output_file
 def microvolt_to_beats(input_file, output_file):
-    heart = pandas.read_csv(input_file, sep=',', dtype={"timestamp": int, "value": float})
+    heart = pandas.read_csv(input_file, sep=',', compression="infer", dtype={"value": float})
 
     results = []
 
@@ -57,7 +57,7 @@ def microvolt_to_beats(input_file, output_file):
 
 # converts timestamps in input_file from seconds to milliseconds and saves them to output_file
 def sec_to_millisec(input_file, output_file, sep=","):
-    heart = pandas.read_csv(input_file, sep=sep, dtype={"timestamp": int, "value": float})
+    heart = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
     result = []
 
     for i in heart.values:
@@ -80,7 +80,7 @@ def __save_to_file(path, values):
     with open(path, "w+") as file:
         file.write("timestamp, value\n")
         for i in values:
-            file.write(f"{i[0]}, {i[1]}\n")
+            file.write(f"{int(i[0])}, {i[1]}\n")
     return
 
 
@@ -134,8 +134,11 @@ def __get_lowest_min(minima):
 def __dialistic_points_to_beats(points):
     results = []
     for i in range(1, len(points)):
-        bpm_value = __interval_to_bpm_sec(points[i][0]-points[i-1][0])
-        if 50 < bpm_value < 130:
-            results.append((round(points[i][0]*1000), round(bpm_value, 2)))
+        try:
+            bpm_value = __interval_to_bpm_sec(points[i][0]-points[i-1][0])
+            if 50 < bpm_value < 130:
+                results.append((round(points[i][0]*1000), round(bpm_value, 2)))
+        except TypeError:
+            continue
 
     return results

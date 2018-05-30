@@ -1,13 +1,17 @@
 import os
 from shutil import copyfile
 from lib.converters import *
+import lib.image_processing
 
 # processing of single person
 def processPerson(path):
-    sensors = next(os.walk(path))[1]
     print(path)
+
+    sensors = next(os.walk(path))[1]
     if not os.path.exists(path + "/output"):
         os.makedirs(path + "/output")
+
+    lib.image_processing.process_image_file(path)
 
     if "BITalino" in sensors:
         microvolt_to_beats(__get_file_name(path + "/BITalino", "BPM"), path + "/output/BPM.csv")
