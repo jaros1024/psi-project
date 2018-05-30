@@ -1,6 +1,7 @@
 import pandas
 
 
+# converts values in input_file from ohm to microseconds and saves them to output_file
 def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
     skin_data = pandas.read_csv(input_file, sep=sep, dtype={"timestamp": int, "value": float})
 
@@ -14,10 +15,12 @@ def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
     __save_to_file(output_file, result)
 
 
+# converts single value in ohm to microsiemens
 def __ohm_to_microsiemens_value(ohm):
     return (1/ohm)*1000000.0
 
 
+# converts values in input_file from nanowatt to bpm and saves them to output_file
 def nanowatt_to_beats(input_file, output_file):
     heart = pandas.read_csv(input_file, sep=';', dtype={"timestamp": int, "value": float})
 
@@ -29,6 +32,7 @@ def nanowatt_to_beats(input_file, output_file):
     return
 
 
+# converts values in input_file from microvolt to bpm and saves them to output_file
 def microvolt_to_beats(input_file, output_file):
     heart = pandas.read_csv(input_file, sep=',', dtype={"timestamp": int, "value": float})
 
@@ -40,8 +44,8 @@ def microvolt_to_beats(input_file, output_file):
         if i[1] >= 800 and not is_beat:
             if last_beat != 0:
                 bpm = __interval_to_bpm(i[0] - last_beat)
-                if bpm < 200:
-                    results.append((i[0], bpm))
+                if 50 < bpm < 150:
+                    results.append((i[0], round(bpm, 2)))
             last_beat = i[0]
             is_beat = True
         if i[1] <= 800 and is_beat:
@@ -51,22 +55,36 @@ def microvolt_to_beats(input_file, output_file):
     return
 
 
+# converts timestamps in input_file from seconds to milliseconds and saves them to output_file
+def sec_to_millisec(input_file, output_file, sep=","):
+    heart = pandas.read_csv(input_file, sep=sep, dtype={"timestamp": int, "value": float})
+    result = []
+
+    for i in heart.values:
+        result.append((i[0]*1000, i[1]))
+    __save_to_file(output_file, result)
+
+
+# returns bpm basing on interval in milliseconds between heartbeat
 def __interval_to_bpm(interval):
     return 60000.0/interval
 
 
+# returns bpm basing on interval in seconds between heartbeat
 def __interval_to_bpm_sec(interval):
     return 60.0/interval
 
 
+# saves given list as csv file
 def __save_to_file(path, values):
     with open(path, "w+") as file:
         file.write("timestamp, value\n")
         for i in values:
-            file.write(f"{i[0]}, {round(i[1], 2)}\n")
+            file.write(f"{i[0]}, {i[1]}\n")
     return
 
 
+# finds all local extremes in given function
 def __get_local_extremes(data):
     results = []
 
@@ -80,6 +98,7 @@ def __get_local_extremes(data):
     return results
 
 
+# finds extremes that are diastolic points
 def __get_diastolic_points(extremes):
     diastolic_points = []
 
@@ -97,6 +116,8 @@ def __get_diastolic_points(extremes):
 
     return diastolic_points
 
+
+# gets minimum that has the lowest value
 def __get_lowest_min(minima):
     lowest = (0, 999)
 
@@ -109,6 +130,7 @@ def __get_lowest_min(minima):
     return None
 
 
+# converts list of diastolic points to beats per minute
 def __dialistic_points_to_beats(points):
     results = []
     for i in range(1, len(points)):
