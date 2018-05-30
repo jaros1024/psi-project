@@ -1,7 +1,20 @@
 import pandas
 
 
-def ohm_to_microsiemens(ohm):
+def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
+    skin_data = pandas.read_csv(input_file, sep=sep, dtype={"timestamp": int, "value": float})
+
+    result = []
+    for i in skin_data.values:
+        timestamp = i[0]
+        if unit == "sec":
+            timestamp *= 1000
+        result.append((timestamp, __ohm_to_microsiemens_value(i[1])))
+
+    __save_to_file(output_file, result)
+
+
+def __ohm_to_microsiemens_value(ohm):
     return (1/ohm)*1000000.0
 
 
