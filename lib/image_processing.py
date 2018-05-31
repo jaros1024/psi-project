@@ -12,7 +12,10 @@ def process_image_file(path):
 
     results = []
     for i in image_data.values:
-        results.append((i[0], __str_to_timestamp(i[1])))
+        try:
+            results.append((i[0], __str_to_timestamp(i[1])))
+        except ValueError as e:
+            print('skipped a value (image conversion) {}'.format(e))
 
     __save_to_file(output_file, results)
 

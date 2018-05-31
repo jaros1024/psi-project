@@ -3,8 +3,9 @@ from shutil import copyfile
 from lib.converters import *
 import lib.image_processing
 
+
 # processing of single person
-def processPerson(path):
+def process_person(path):
     print(path)
 
     sensors = next(os.walk(path))[1]
@@ -15,7 +16,7 @@ def processPerson(path):
 
     if "BITalino" in sensors:
         microvolt_to_beats(__get_file_name(path + "/BITalino", "BPM"), path + "/output/BPM.csv")
-        copyfile(path + "/BITalino/GSR.csv", path + "/output/GSR.csv")
+        copyfile(__get_file_name(path + "/BITalino","GSR"), path + "/output/GSR.csv")
     else:
         if "Empatica" in sensors and "eHealth" in sensors:
             nanowatt_to_beats(__get_file_name(path + "/Empatica", "BVP"), path + "/output/BPM.csv")
@@ -48,12 +49,11 @@ def __get_file_name(path, sensor):
             return path + "/BVP_p.csv"
 
 
+if __name__ == '__main__':
+    #assuming that data is in same folder
+    root_path = '2018-afcai-spring'
+    dirs = next(os.walk(root_path))[1]
 
-#assuming that data is in same folder
-rootPath = '2018-afcai-spring'
-
-dirs = next(os.walk(rootPath))[1]
-
-for directory in dirs:
-    processPerson(rootPath+"/"+directory)
+    for directory in dirs:
+        process_person(root_path + "/" + directory)
 
