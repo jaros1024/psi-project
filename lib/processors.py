@@ -5,10 +5,10 @@ import numpy as np
 
 def extract_data_for_single_image(path, time_range=10):
     """"
-    functions assums that data is converted and 'output' folder in given path exists
+    functions assumes that data is converted and 'output' folder in given path exists
     :param path: path to single person folder
     :param time_range: time range which will be extracted in seconds
-    :returns """
+    :returns dictionary with picture names as keys and tuple of data arrays as data ([bpm],[gsr])"""
     output = {}
     inner_root_path = os.path.join(path,'output')
     bmp_filepath = os.path.join(inner_root_path, 'BPM.csv')
@@ -29,7 +29,7 @@ def extract_data_for_single_image(path, time_range=10):
         filtered_bpm = _find_data_in_range(bmp_data,start_time, time_range, next_start_time)
         filtered_gsr = _find_data_in_range(gsr_data,start_time, time_range, next_start_time)
         output[name] = (filtered_bpm, filtered_gsr)
-    return  output
+    return output
 
 
 
@@ -50,5 +50,3 @@ def _find_data_in_range(raw_data: np.ndarray, start:int, range_: int, max_time:i
     return found
 
 
-class RangeExceeded(Exception):
-    pass
