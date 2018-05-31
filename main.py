@@ -48,9 +48,9 @@ def __get_file_name(path, sensor):
             return path + "/BVP_p.csv"
 
 
-rootPath = input("Enter root path of the data: ")
-print("Starting data processing")
-print(f"Root directory is {rootPath}")
+
+#assuming that data is in same folder
+rootPath = '2018-afcai-spring'
 
 dirs = next(os.walk(rootPath))[1]
 
