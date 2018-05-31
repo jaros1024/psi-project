@@ -2,7 +2,7 @@ import os
 from shutil import copyfile
 from lib.converters import *
 import lib.image_processing
-
+import lib.processors as proc
 
 # processing of single person
 def process_person(path):
@@ -48,12 +48,13 @@ def __get_file_name(path, sensor):
         elif os.path.isfile(path + "/BVP_p.csv"):
             return path + "/BVP_p.csv"
 
+def convert_data(root_path):
+    dirs = next(os.walk(root_path))[1]
+    for directory in dirs:
+        process_person(root_path + "/" + directory)
 
 if __name__ == '__main__':
     #assuming that data is in same folder
     root_path = '2018-afcai-spring'
-    dirs = next(os.walk(root_path))[1]
-
-    for directory in dirs:
-        process_person(root_path + "/" + directory)
-
+    #convert_data(root_path)
+    proc.extract_data_for_single_image(root_path + '/B310')

@@ -35,4 +35,4 @@ def __save_to_file(path, values):
     with open(path, "w+") as file:
         for i in values:
             file.write(f"{i[0]}, {int(i[1])}\n")
-    return
+
