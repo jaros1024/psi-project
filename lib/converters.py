@@ -29,7 +29,7 @@ def nanowatt_to_beats(input_file, output_file):
     bpm = __dialistic_points_to_beats(diastolic_points)
 
     __save_to_file(output_file, bpm)
-    return
+
 
 
 # converts values in input_file from microvolt to bpm and saves them to output_file
@@ -52,7 +52,7 @@ def microvolt_to_beats(input_file, output_file):
             is_beat = False
 
     __save_to_file(output_file, results)
-    return
+
 
 
 # converts timestamps in input_file from seconds to milliseconds and saves them to output_file
@@ -81,7 +81,7 @@ def __save_to_file(path, values):
         file.write("timestamp, value\n")
         for i in values:
             file.write(f"{int(i[0])}, {i[1]}\n")
-    return
+
 
 
 # finds all local extremes in given function

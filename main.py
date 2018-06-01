@@ -2,9 +2,12 @@ import os
 from shutil import copyfile
 from lib.converters import *
 import lib.image_processing
+import lib.processors as proc
+import lib.plotters as plot
+import os.path as op
 
 # processing of single person
-def processPerson(path):
+def process_person(path):
     print(path)
 
     sensors = next(os.walk(path))[1]
@@ -15,7 +18,7 @@ def processPerson(path):
 
     if "BITalino" in sensors:
         microvolt_to_beats(__get_file_name(path + "/BITalino", "BPM"), path + "/output/BPM.csv")
-        copyfile(path + "/BITalino/GSR.csv", path + "/output/GSR.csv")
+        copyfile(__get_file_name(path + "/BITalino","GSR"), path + "/output/GSR.csv")
     else:
         if "Empatica" in sensors and "eHealth" in sensors:
             nanowatt_to_beats(__get_file_name(path + "/Empatica", "BVP"), path + "/output/BPM.csv")
@@ -48,12 +51,15 @@ def __get_file_name(path, sensor):
             return path + "/BVP_p.csv"
 
 
-rootPath = input("Enter root path of the data: ")
-print("Starting data processing")
-print(f"Root directory is {rootPath}")
+def convert_data(root_path):
+    dirs = next(os.walk(root_path))[1]
+    for directory in dirs:
+        process_person(op.join(root_path, directory))
 
-dirs = next(os.walk(rootPath))[1]
 
-for directory in dirs:
-    processPerson(rootPath+"/"+directory)
-
+if __name__ == '__main__':
+    #assuming that data is in same folder
+    root_path = '2018-afcai-spring'
+    #convert_data(root_path)
+    data = proc.extract_data_for_single_image(root_path + '/B310')
+    plot.plot_all_in_dict(data)
