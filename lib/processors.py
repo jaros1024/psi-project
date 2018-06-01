@@ -13,7 +13,7 @@ def extract_data_for_single_image(path, time_range=10):
     inner_root_path = os.path.join(path,'output')
     bmp_filepath = os.path.join(inner_root_path, 'BPM.csv')
     gsr_filepath = os.path.join(inner_root_path, 'GSR.csv')
-    images_path = os.path.join(inner_root_path,'images.csv')
+    images_path = os.path.join(inner_root_path, 'images.csv')
 
     images_data = pandas.read_csv(images_path, sep=',', header=None).values
     my_dtype = {'timestamp':np.uint64,'value': float}

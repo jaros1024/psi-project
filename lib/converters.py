@@ -1,4 +1,5 @@
 import pandas
+from statistics import mean
 
 
 # converts values in input_file from ohm to microseconds and saves them to output_file
@@ -11,6 +12,8 @@ def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
         if unit == "sec":
             timestamp *= 1000
         result.append((timestamp, __ohm_to_microsiemens_value(i[1])))
+
+    result = __values_to_diffs(result)
 
     __save_to_file(output_file, result)
 
@@ -27,41 +30,53 @@ def nanowatt_to_beats(input_file, output_file):
     extremes = __get_local_extremes(heart.values)
     diastolic_points = __get_diastolic_points(extremes)
     bpm = __dialistic_points_to_beats(diastolic_points)
+    bpm = __values_to_diffs(bpm)
 
     __save_to_file(output_file, bpm)
 
 
-
 # converts values in input_file from microvolt to bpm and saves them to output_file
 def microvolt_to_beats(input_file, output_file):
-    heart = pandas.read_csv(input_file, sep=',', compression="infer", dtype={"value": float})
+    heart = pandas.read_csv(input_file, sep=',', dtype={"value": float})
 
     results = []
 
     last_beat = 0
     is_beat = False
     for i in heart.values:
-        if i[1] >= 800 and not is_beat:
+        if i[1] >= 700 and not is_beat:
             if last_beat != 0:
                 bpm = __interval_to_bpm(i[0] - last_beat)
                 if 50 < bpm < 150:
                     results.append((i[0], round(bpm, 2)))
             last_beat = i[0]
             is_beat = True
-        if i[1] <= 800 and is_beat:
+        if i[1] <= 700 and is_beat:
             is_beat = False
+
+    results = __values_to_diffs(results)
 
     __save_to_file(output_file, results)
 
 
-
 # converts timestamps in input_file from seconds to milliseconds and saves them to output_file
-def sec_to_millisec(input_file, output_file, sep=","):
+def sec_to_millisec(input_file, output_file, sep=",", mean=False):
     heart = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
     result = []
 
     for i in heart.values:
         result.append((i[0]*1000, i[1]))
+
+    if mean:
+        result = __values_to_diffs(result)
+
+    __save_to_file(output_file, result)
+
+
+def diff_values(input_file, output_file, sep=","):
+    heart = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
+    result = __values_to_diffs(heart.values)
+
     __save_to_file(output_file, result)
 
 
@@ -81,7 +96,6 @@ def __save_to_file(path, values):
         file.write("timestamp, value\n")
         for i in values:
             file.write(f"{int(i[0])}, {i[1]}\n")
-
 
 
 # finds all local extremes in given function
@@ -140,5 +154,20 @@ def __dialistic_points_to_beats(points):
                 results.append((round(points[i][0]*1000), round(bpm_value, 2)))
         except TypeError:
             continue
+
+    return results
+
+
+# converts list of (timestamp, value) to list of (timestamp, avg-value)
+def __values_to_diffs(values: []):
+    originals = []
+    for i in values:
+        originals.append(i[1])
+
+    avg = mean(originals)
+    results = []
+
+    for i in values:
+        results.append((i[0], round(i[1] - avg, 2)))
 
     return results

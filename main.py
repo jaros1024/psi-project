@@ -1,10 +1,10 @@
 import os
-from shutil import copyfile
 from lib.converters import *
 import lib.image_processing
 import lib.processors as proc
 import lib.plotters as plot
 import os.path as op
+
 
 # processing of single person
 def process_person(path):
@@ -18,7 +18,7 @@ def process_person(path):
 
     if "BITalino" in sensors:
         microvolt_to_beats(__get_file_name(path + "/BITalino", "BPM"), path + "/output/BPM.csv")
-        copyfile(__get_file_name(path + "/BITalino","GSR"), path + "/output/GSR.csv")
+        diff_values(__get_file_name(path + "/BITalino","GSR"), path + "/output/GSR.csv")
     else:
         if "Empatica" in sensors and "eHealth" in sensors:
             nanowatt_to_beats(__get_file_name(path + "/Empatica", "BVP"), path + "/output/BPM.csv")
@@ -27,7 +27,7 @@ def process_person(path):
             nanowatt_to_beats(__get_file_name(path + "/Empatica", "BVP"), path + "/output/BPM.csv")
             sec_to_millisec(__get_file_name(path + "/Empatica", "GSR"), path + "/output/GSR.csv", sep=";")
         elif "eHealth" in sensors:
-            copyfile(__get_file_name(path + "/eHealth", "BPM"), path + "/output/BPM.csv")
+            diff_values(__get_file_name(path + "/eHealth", "BPM"), path + "/output/BPM.csv")
             ohm_to_microsiemens(__get_file_name(path + "/eHealth", "GSR"), path + "/output/GSR.csv")
     print()
 
