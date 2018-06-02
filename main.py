@@ -18,7 +18,6 @@ def process_person(path):
 
     if "BITalino" in sensors:
         microvolt_to_beats(__get_file_name(path + "/BITalino", "BPM"), path + "/output/BPM.csv")
-
         diff_values(__get_file_name(path + "/BITalino","GSR"), path + "/output/GSR.csv")
     else:
         if "Empatica" in sensors and "eHealth" in sensors:
@@ -56,6 +55,7 @@ def convert_data(root_path):
     dirs = next(os.walk(root_path))[1]
     for directory in dirs:
         process_person(op.join(root_path, directory))
+        break
 
 
 if __name__ == '__main__':
