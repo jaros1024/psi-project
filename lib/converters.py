@@ -9,15 +9,14 @@ def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
     for every 5 values and saves them to output_file
     """
     skin_data = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
-    mean_data = __mean_data(skin_data.values, 5)
     result = []
-    for i in mean_data:
+    for i in skin_data.values:
         timestamp = i[0]
         if unit == "sec":
             timestamp *= 1000
         result.append((timestamp, __ohm_to_microsiemens_value(i[1])))
 
-    result = __values_to_diffs(result)
+    result = __values_to_diffs(result,take_mean=True)
 
     __save_to_file(output_file, result)
 
@@ -34,7 +33,7 @@ def nanowatt_to_beats(input_file, output_file):
     extremes = __get_local_extremes(heart.values)
     diastolic_points = __get_diastolic_points(extremes)
     bpm = __dialistic_points_to_beats(diastolic_points)
-    bpm = __values_to_diffs(bpm)
+    bpm = __values_to_diffs(bpm, take_mean=True)
 
     __save_to_file(output_file, bpm)
 
@@ -70,24 +69,22 @@ def sec_to_millisec(input_file, output_file, sep=",", mean=False):
     """
     heart = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
 
-    mean_data = __mean_data(heart.values, 5)
     result = []
 
-    for i in mean_data:
+    for i in heart.values:
         result.append((i[0]*1000, i[1]))
 
     if mean:
-        result = __values_to_diffs(result)
+        result = __values_to_diffs(result, take_mean=True)
 
     __save_to_file(output_file, result)
 
-
-def diff_values(input_file, output_file, sep=",",take_mean=False):
-
+def diff_values(input_file, output_file, sep=","):
     heart = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
-
-    result = __values_to_diffs(heart.values)
-
+    if len(heart.values) == 0:
+        return
+    mean_data = 'GSR' in output_file
+    result = __values_to_diffs(heart.values, take_mean=mean_data)
     __save_to_file(output_file, result)
 
 
@@ -170,7 +167,9 @@ def __dialistic_points_to_beats(points):
 
 
 # converts list of (timestamp, value) to list of (timestamp, avg-value)
-def __values_to_diffs(values: []):
+def __values_to_diffs(values: [], take_mean=False):
+    if take_mean:
+        values = __mean_data(values, 5)
     originals = []
     for i in values:
         originals.append(i[1])
@@ -182,7 +181,6 @@ def __values_to_diffs(values: []):
         results.append((i[0], round(i[1] - avg, 2)))
 
     return results
-
 
 
 def __mean_data(data:[], window_size:int) -> []:

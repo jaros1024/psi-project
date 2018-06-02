@@ -17,8 +17,8 @@ def extract_data_for_single_image(path, time_range=10):
 
     images_data = pandas.read_csv(images_path, sep=',', header=None).values
     my_dtype = {'timestamp':np.uint64,'value': float}
-    bmp_data = pandas.read_csv(bmp_filepath, sep=',',dtype=my_dtype).values
-    gsr_data = pandas.read_csv(gsr_filepath, sep=',', dtype=my_dtype).values
+    bmp_data = pandas.read_csv(bmp_filepath, sep=',',dtype=my_dtype).values if os.path.isfile(bmp_filepath) else []
+    gsr_data = pandas.read_csv(gsr_filepath, sep=',', dtype=my_dtype).values if os.path.isfile(gsr_filepath) else []
     for index, image in enumerate(images_data):
         name = _get_filename(image[0])
         start_time = image[1]
