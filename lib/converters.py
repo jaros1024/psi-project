@@ -5,6 +5,8 @@ from statistics import mean
 # converts values in input_file from ohm to microseconds and saves them to output_file
 def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
     skin_data = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
+    if len(skin_data.values) == 0:
+        return
 
     result = []
     for i in skin_data.values:
@@ -25,7 +27,7 @@ def __ohm_to_microsiemens_value(ohm):
 
 # converts values in input_file from nanowatt to bpm and saves them to output_file
 def nanowatt_to_beats(input_file, output_file):
-    heart = pandas.read_csv(input_file, sep=';', dtype={"value": float}, error_bad_lines=False, warn_bad_lines=False)
+    heart = pandas.read_csv(input_file, sep=';', dtype={"timestamp": float}, error_bad_lines=False, warn_bad_lines=False)
 
     extremes = __get_local_extremes(heart.values)
     diastolic_points = __get_diastolic_points(extremes)
@@ -44,14 +46,14 @@ def microvolt_to_beats(input_file, output_file):
     last_beat = 0
     is_beat = False
     for i in heart.values:
-        if i[1] >= 700 and not is_beat:
+        if i[1] >= 650 and not is_beat:
             if last_beat != 0:
                 bpm = __interval_to_bpm(i[0] - last_beat)
                 if 50 < bpm < 150:
                     results.append((i[0], round(bpm, 2)))
             last_beat = i[0]
             is_beat = True
-        if i[1] <= 700 and is_beat:
+        if i[1] <= 650 and is_beat:
             is_beat = False
 
     results = __values_to_diffs(results)
@@ -75,8 +77,10 @@ def sec_to_millisec(input_file, output_file, sep=",", mean=False):
 
 def diff_values(input_file, output_file, sep=","):
     heart = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
-    result = __values_to_diffs(heart.values)
+    if len(heart.values) == 0:
+        return
 
+    result = __values_to_diffs(heart.values)
     __save_to_file(output_file, result)
 
 
@@ -136,8 +140,11 @@ def __get_lowest_min(minima):
     lowest = (0, 999)
 
     for i in minima:
-        if i[1] < lowest[1]:
-            lowest = (i[0], i[1])
+        try:
+            if i[1] < lowest[1]:
+                lowest = (float(i[0]), i[1])
+        except ValueError:
+            continue
 
     if lowest[1] < 0:
         return lowest
