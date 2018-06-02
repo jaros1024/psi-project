@@ -19,7 +19,6 @@ def extract_data_for_single_image(path, time_range=10):
     my_dtype = {'timestamp':np.uint64,'value': float}
     bmp_data = pandas.read_csv(bmp_filepath, sep=',',dtype=my_dtype).values
     gsr_data = pandas.read_csv(gsr_filepath, sep=',', dtype=my_dtype).values
-    gsr_data = _mean_data(gsr_data, 5)
     for index, image in enumerate(images_data):
         name = _get_filename(image[0])
         start_time = image[1]
@@ -31,10 +30,6 @@ def extract_data_for_single_image(path, time_range=10):
         filtered_gsr = _find_data_in_range(gsr_data,start_time, time_range, next_start_time)
         output[name] = (filtered_bpm, filtered_gsr)
     return output
-
-
-
-
 
 
 def _get_filename(base_str:str) -> str:
@@ -51,15 +46,3 @@ def _find_data_in_range(raw_data: np.ndarray, start:int, range_: int, max_time:i
     found = [x for x in raw_data if 0 <= x[0] - start <= ns_range ]
     return found
 
-
-def _mean_data(data:[], window_size:int) -> []:
-    total_len = len(data)
-    index = 0
-    out = []
-    while index + window_size < total_len:
-        chunk = data[index : index + window_size]
-        middle_time = data[(2*index + window_size) // 2][0]
-        mean = np.mean(chunk[:,1])
-        out.append(np.asarray([middle_time, mean]))
-        index = index + window_size
-    return out

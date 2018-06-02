@@ -1,13 +1,17 @@
 import pandas
 from statistics import mean
+import numpy as np
 
 
-# converts values in input_file from ohm to microseconds and saves them to output_file
 def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
+    """"
+    converts values in input_file from ohm to microseconds while prevoiusly counting mean
+    for every 5 values and saves them to output_file
+    """
     skin_data = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
-
+    mean_data = __mean_data(skin_data.values, 5)
     result = []
-    for i in skin_data.values:
+    for i in mean_data:
         timestamp = i[0]
         if unit == "sec":
             timestamp *= 1000
@@ -59,12 +63,17 @@ def microvolt_to_beats(input_file, output_file):
     __save_to_file(output_file, results)
 
 
-# converts timestamps in input_file from seconds to milliseconds and saves them to output_file
 def sec_to_millisec(input_file, output_file, sep=",", mean=False):
+    """"
+    converts timestamps in input_file from seconds to milliseconds while also
+     taking mean with window of 5 and saves them to output_file
+    """
     heart = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
+
+    mean_data = __mean_data(heart.values, 5)
     result = []
 
-    for i in heart.values:
+    for i in mean_data:
         result.append((i[0]*1000, i[1]))
 
     if mean:
@@ -74,6 +83,7 @@ def sec_to_millisec(input_file, output_file, sep=",", mean=False):
 
 
 def diff_values(input_file, output_file, sep=","):
+
     heart = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
     result = __values_to_diffs(heart.values)
 
@@ -171,3 +181,17 @@ def __values_to_diffs(values: []):
         results.append((i[0], round(i[1] - avg, 2)))
 
     return results
+
+
+
+def __mean_data(data:[], window_size:int) -> []:
+    total_len = len(data)
+    index = 0
+    out = []
+    while index + window_size < total_len:
+        chunk = data[index : index + window_size]
+        middle_time = data[(2*index + window_size) // 2][0]
+        mean = np.mean(chunk[:,1])
+        out.append(np.asarray([middle_time, mean]))
+        index = index + window_size
+    return out

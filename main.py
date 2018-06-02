@@ -18,6 +18,7 @@ def process_person(path):
 
     if "BITalino" in sensors:
         microvolt_to_beats(__get_file_name(path + "/BITalino", "BPM"), path + "/output/BPM.csv")
+
         diff_values(__get_file_name(path + "/BITalino","GSR"), path + "/output/GSR.csv")
     else:
         if "Empatica" in sensors and "eHealth" in sensors:
@@ -60,6 +61,6 @@ def convert_data(root_path):
 if __name__ == '__main__':
     #assuming that data is in same folder
     root_path = '2018-afcai-spring'
-    #convert_data(root_path)
-    data = proc.extract_data_for_single_image(root_path + '/B310')
-    plot.plot_all_in_dict(data)
+    convert_data(root_path)
+    #data = proc.extract_data_for_single_image(root_path + '/B310')
+    #plot.plot_all_in_dict(data)
