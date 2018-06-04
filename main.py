@@ -1,10 +1,16 @@
 import os
+
+import numpy as np
+
 from lib.converters import *
 import lib.image_processing
 import lib.processors as proc
 import lib.plotters as plot
 import os.path as op
 
+
+sample_root='2018-afcai-spring'
+output_root='2018-asia-winter'
 
 # processing of single person
 def process_person(path):
@@ -60,7 +66,7 @@ def convert_data(root_path):
 
 if __name__ == '__main__':
     #assuming that data is in same folder
-    root_path = '2018-afcai-spring'
-    convert_data(root_path)
-    #data = proc.extract_data_for_single_image(root_path + '/B310')
-    #plot.plot_all_in_dict(data)
+    convert_data(sample_root)
+    proc.gather_info()
+    # data = proc.extract_data_for_single_image(sample_root + '/B303')
+    # plot.plot_all_in_dict(data)

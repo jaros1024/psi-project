@@ -1,6 +1,49 @@
+import csv
 import pandas
 import os
 import numpy as np
+
+sample_root='2018-afcai-spring'
+output_root='2018-asia-winter'
+
+def gather_info():
+    cleanOutput()
+    dirs = next(os.walk(sample_root))[1]
+    for directory in dirs:
+        current_dir = os.path.join(sample_root, directory)
+        data =extract_data_for_single_image(current_dir)
+        for image in data:
+            handle_image(os.path.join(image,directory),data.get(image),image)
+        break
+
+
+def handle_image(path:str,data:tuple,im):
+    image_file=os.path.join(output_root,path)+'.csv'
+    image_dir=os.path.join(output_root,im)
+    os.mkdir(image_dir)
+
+    # Trzeba wyciagnac z daty wartosci i wpisac je do pliku
+
+    with open(image_file,'a+',) as image_csv:
+        writer=csv.writer(image_csv,delimiter=';', escapechar=' ', quotechar='', quoting=csv.QUOTE_NONE)
+
+        image_csv.close()
+
+
+
+def cleanOutput():
+    for root, dirs, files in os.walk(output_root, topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+
+
+
+
+
+
+
 
 
 def extract_data_for_single_image(path, time_range=10):
