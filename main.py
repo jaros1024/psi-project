@@ -7,10 +7,14 @@ import lib.image_processing
 import lib.processors as proc
 import lib.plotters as plot
 import os.path as op
+import pandas
 
 
 sample_root='2018-afcai-spring'
 output_root='2018-asia-winter'
+
+NAPS_VALIDATION_DATA = pandas.read_csv('NAPS_valence_arousal_2014.csv',sep=';', names=['ID', 'Category','Nr', 'V_H',
+                                                                              'Description', 'Valence' ,'Arousal'])
 
 # processing of single person
 def process_person(path):
