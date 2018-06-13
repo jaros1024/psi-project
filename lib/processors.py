@@ -9,7 +9,7 @@ NAPS_VALIDATION_DATA = pandas.read_csv('NAPS_valence_arousal_2014.csv', sep=';',
 def merge_bpm_and_csr(d_root):
     """"
     loads all processed data to pandas.DataFrame
-    :returns pandas DataFrame with rows columns [bpm. gsr ,valence ,arousal]
+    :returns pandas DataFrame with  columns [bpm. gsr ,valence ,arousal]
     """
     final_list = pandas.DataFrame(columns=['bpm', 'gsr', 'valence', 'arousal'])
     dirs = next(os.walk(d_root))[1]
