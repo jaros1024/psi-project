@@ -10,11 +10,10 @@ import os.path as op
 import pandas
 
 
-sample_root='2018-afcai-spring'
+SAMPLE_ROOT = '2018-afcai-spring'
 output_root='2018-asia-winter'
 
-NAPS_VALIDATION_DATA = pandas.read_csv('NAPS_valence_arousal_2014.csv',sep=';', names=['ID', 'Category','Nr', 'V_H',
-                                                                              'Description', 'Valence' ,'Arousal'])
+
 
 # processing of single person
 def process_person(path):
@@ -70,7 +69,8 @@ def convert_data(root_path):
 
 if __name__ == '__main__':
     #assuming that data is in same folder
-    convert_data(sample_root)
-    proc.gather_info()
+    #convert_data(SAMPLE_ROOT)
+    r = proc.merge_bpm_and_csr(SAMPLE_ROOT)
+    print(r)
     # data = proc.extract_data_for_single_image(sample_root + '/B303')
     # plot.plot_all_in_dict(data)

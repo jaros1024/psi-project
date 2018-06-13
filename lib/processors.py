@@ -3,14 +3,16 @@ import pandas
 import os
 import numpy as np
 
-sample_root='2018-afcai-spring'
-output_root='2018-asia-winter'
+SAMPLE_ROOT= '2018-afcai-spring'
+#output_root='2018-asia-winter'
 
+NAPS_VALIDATION_DATA = pandas.read_csv('NAPS_valence_arousal_2014.csv',sep=';', names=['ID', 'Category','Nr', 'V_H',
+                                                                              'Description', 'Valence' ,'Arousal'])
 def gather_info():
     cleanOutput()
-    dirs = next(os.walk(sample_root))[1]
+    dirs = next(os.walk(SAMPLE_ROOT))[1]
     for directory in dirs:
-        current_dir = os.path.join(sample_root, directory)
+        current_dir = os.path.join(SAMPLE_ROOT, directory)
         data = extract_data_for_single_image(current_dir)
         for image in data:
             handle_image(os.path.join(image,directory),data.get(image),image)
@@ -42,13 +44,21 @@ def cleanOutput():
             os.rmdir(os.path.join(root, name))
 
 
-def merge_bpm_and_csr():
+def merge_bpm_and_csr(d_root):
     """"
     merges bpm and csr into single list of values, excluding timestamp, adds info about what prediceted valued shoulld be
-    :returns ([data],valence, arousal)
+    :returns [data,valence, arousal]
     """
-    pass
-
+    final_list = []
+    dirs = next(os.walk(d_root))[1]
+    for directory in dirs:
+        current_dir = os.path.join(d_root, directory)
+        data = extract_data_for_single_image(current_dir, keep_timestamp=False)
+        for name in data.keys():
+            bpm, gsr = data[name]
+            valence, arousal = _find_v_a(NAPS_VALIDATION_DATA, name)
+            final_list.append(bpm + gsr + [valence, arousal])
+    return final_list
 
 def extract_data_for_single_image(path, time_range=10, keep_timestamp=True):
     """"
@@ -72,7 +82,7 @@ def extract_data_for_single_image(path, time_range=10, keep_timestamp=True):
         if index + 1 < len(images_data):
             next_start_time = images_data[index + 1][1]
         else:
-            next_start_time = start_time + time_range*1000
+            next_start_time = start_time + time_range * 1000
         filtered_bpm = _find_data_in_range(bmp_data, start_time, time_range, next_start_time, not keep_timestamp)
         filtered_gsr = _find_data_in_range(gsr_data, start_time, time_range, next_start_time, not keep_timestamp)
         output[name] = (filtered_bpm, filtered_gsr)
@@ -95,3 +105,11 @@ def _find_data_in_range(raw_data: np.ndarray, start:int, range_: int, max_time:i
     return found
 
 
+def _find_v_a(pandas_df, name):
+    row = pandas_df.loc[pandas_df['ID'] == name ]
+    return _str_with_comma_to_float(row['Valence'].values[0]),\
+           _str_with_comma_to_float(row['Arousal'].values[0])
+
+
+def _str_with_comma_to_float(data: str) -> float:
+    return float(data.replace(',', '.'))
