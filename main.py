@@ -2,10 +2,12 @@ import os
 
 import numpy as np
 
+from statistics import StatisticsError
 from lib.converters import *
 import lib.image_processing
-import lib.processors as proc
 import lib.plotters as plot
+import lib.processors as proc
+import lib.models as models
 import os.path as op
 import pandas
 
@@ -34,7 +36,7 @@ def process_person(path):
             ohm_to_microsiemens(__get_file_name(path + "/eHealth", "GSR"), path + "/output/GSR.csv")
         elif "Empatica" in sensors:
             nanowatt_to_beats(__get_file_name(path + "/Empatica", "BVP"), path + "/output/BPM.csv")
-            sec_to_millisec(__get_file_name(path + "/Empatica", "GSR"), path + "/output/GSR.csv", sep=";")
+            sec_to_millisec(__get_file_name(path + "/Empatica", "GSR"), path + "/output/GSR.csv", sep=";", mean=True)
         elif "eHealth" in sensors:
             diff_values(__get_file_name(path + "/eHealth", "BPM"), path + "/output/BPM.csv")
             ohm_to_microsiemens(__get_file_name(path + "/eHealth", "GSR"), path + "/output/GSR.csv")
@@ -63,16 +65,20 @@ def __get_file_name(path, sensor):
 def convert_data(root_path):
     dirs = next(os.walk(root_path))[1]
     for directory in dirs:
-        process_person(op.join(root_path, directory))
-
+        try:
+            process_person(op.join(root_path, directory))
+        except StatisticsError:
+            continue
 
 
 if __name__ == '__main__':
     #assuming that data is in same folder
-    #convert_data(SAMPLE_ROOT)
+    convert_data(SAMPLE_ROOT)
     d_frame = proc.merge_bpm_and_csr(SAMPLE_ROOT)
-    data_output_path = op.join(SAMPLE_ROOT, 'processed.csv')
+
     #save to file
+    data_output_path = op.join(SAMPLE_ROOT, 'processed.csv')
     d_frame.to_csv(data_output_path, encoding='utf-8')
     # data = proc.extract_data_for_single_image(sample_root + '/B303')
     # plot.plot_all_in_dict(data)
+    models.validate_models("processed.csv")
