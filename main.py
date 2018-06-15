@@ -73,12 +73,12 @@ def convert_data(root_path):
 
 if __name__ == '__main__':
     #assuming that data is in same folder
-    convert_data(SAMPLE_ROOT)
-    d_frame = proc.merge_bpm_and_csr(SAMPLE_ROOT)
+    #convert_data(SAMPLE_ROOT)
+    #d_frame = proc.merge_bpm_and_csr(SAMPLE_ROOT)
 
     #save to file
-    data_output_path = op.join(SAMPLE_ROOT, 'processed.csv')
-    d_frame.to_csv(data_output_path, encoding='utf-8')
+    #data_output_path = op.join(SAMPLE_ROOT, 'processed.csv')
+    #d_frame.to_csv(data_output_path, encoding='utf-8')
     # data = proc.extract_data_for_single_image(sample_root + '/B303')
     # plot.plot_all_in_dict(data)
-    models.validate_models("processed.csv")
+    models.validate_models()

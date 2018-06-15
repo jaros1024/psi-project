@@ -6,14 +6,89 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.svm import LinearSVR
 from sklearn.svm import NuSVR
 from sklearn.svm import SVR
+from pathlib import Path
+import numpy as np
 
 
-def __load_file(file, stat_verbose=False):
+FINAL_DATA_FILE = "final.csv"
+PROCESSED_DATA_FILE = "processed.csv"
+
+
+def __load_file(stat_verbose=False, y_value="valence"):
+    tuple_file = Path(FINAL_DATA_FILE)
+    if tuple_file.exists():
+        result = __load_tuples(FINAL_DATA_FILE)
+    else:
+        result = __make_tuples(PROCESSED_DATA_FILE, stat_verbose=stat_verbose)
+
+    x = []
+    y = []
+
+    for i in result:
+        x.append([i[0], i[1]])
+        if y_value == "valence":
+            y.append(i[2])
+        elif y_value == "arousal":
+            y.append(i[3])
+
+    print("Second loop done")
+    print(f"Number of examples: {len(x)}")
+
+    return x, y
+
+
+def __create_tuples(bpm, gsr, valence, arousal):
+    result = []
+    if len(bpm) == 0:
+        return result
+
+    per_bpm = int(round(len(gsr) / len(bpm)))
+
+    bpm_ptr = 0
+    counter = 0
+    for i in gsr:
+        try:
+            result.append([bpm[bpm_ptr], i, valence, arousal])
+            counter += 1
+            if counter == per_bpm:
+                bpm_ptr += 1
+                counter = 0
+        except IndexError:
+            break
+
+    return __mean_tuples(result)
+
+
+def __mean_tuples(values: []) -> []:
+    result = []
+    gsr = []
+    current_bpm = values[0][0]
+
+    for i in values:
+        if i[0] != current_bpm:
+            result.append((current_bpm, np.mean(gsr), i[2], i[3]))
+            gsr = []
+            current_bpm = i[0]
+        else:
+            gsr.append(i[1])
+
+    return result
+
+
+def __save_tuples(tuples: [], file: str):
+    pandas.DataFrame(tuples).to_csv(file, sep=",", index=False)
+
+
+def __load_tuples(file: str):
+    data = pandas.read_csv(file, sep=",")
+    print(data.head())
+    return data.values
+
+
+def __make_tuples(file: str, stat_verbose=False) -> []:
     emotional_data = pandas.read_csv(file, sep=",", names=["lp", "bpm", "valence", "arousal"], skiprows=1)
 
     result = []
-    x = []
-    y = []
 
     if stat_verbose:
         percent_done = 0
@@ -31,37 +106,11 @@ def __load_file(file, stat_verbose=False):
             new_percent_done = int(round((rows_done / total_rows) * 100))
             if new_percent_done > percent_done:
                 percent_done = new_percent_done
-                if percent_done >= 2:
-                    break
+                # if percent_done >= 50:
+                #     break
                 print(f"{percent_done}% done")
 
-    print("First loop done")
-    for i in result:
-        x.append([i[0], i[1]])
-        #y.append([i[1], i[2]])
-        y.append(i[2])
-
-    print("Second loop done")
-
-    return x, y
-
-
-def __create_tuples(bpm, gsr, valence, arousal):
-    result = []
-    per_bpm = int(round(len(gsr) / len(bpm)))
-
-    bpm_ptr = 0
-    counter = 0
-    for i in gsr:
-        try:
-            result.append([bpm[bpm_ptr], i, valence, arousal])
-            counter += 1
-            if counter == per_bpm:
-                bpm_ptr += 1
-                counter = 0
-        except IndexError:
-            break
-
+    __save_tuples(result, "final.csv")
     return result
 
 
@@ -72,14 +121,15 @@ def __is_gsr_valid(gsr) -> bool:
 
     return False
 
+
 def __get_models():
     models = []
 
     # Ordinary least squares Linear Regression
-    #models.append(('LR', LogisticRegression()))
+    #models.append(('LR', LogisticRegression())) # does not accept non-integer values
 
     # Nu Support Vector Regression
-    #models.append(('NuSVR', NuSVR()))
+    models.append(('NuSVR', NuSVR(nu=0.45)))
 
     # Epsilon-Support Vector Regression
     models.append(('SVR', SVR()))
@@ -93,8 +143,11 @@ def __get_models():
     return models
 
 
-def validate_models(file):
-    (x, y) = __load_file(file, stat_verbose=True)
+def validate_models():
+    (x, y) = __load_file(stat_verbose=True)
+
+    for i in x:
+        print(i)
 
     validation_size = 0.15
     seed = 7
@@ -110,8 +163,8 @@ def validate_models(file):
         print(f"Validating model {name}")
         kfold = model_selection.KFold(n_splits=10, random_state=seed)
 
-        cv_results = model_selection.cross_val_score(model, x_train, y_train, cv=kfold, scoring="accuracy")
+        cv_results = model_selection.cross_val_score(model, x_train, y_train, cv=kfold, scoring="r2")
         results.append(cv_results)
         names.append(name)
-        msg = "%s: %f (%f)" % (name, cv_results.mean(), cv_results.std())
+        msg = "%s: mean: %f , std: %f" % (name, cv_results.mean(), cv_results.std())
         print(msg)
