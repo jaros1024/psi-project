@@ -6,6 +6,8 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.svm import LinearSVR
 from sklearn.svm import NuSVR
 from sklearn.svm import SVR
+from sklearn.linear_model import SGDRegressor
+from sklearn.metrics import r2_score
 from pathlib import Path
 import numpy as np
 
@@ -66,8 +68,11 @@ def __mean_tuples(values: []) -> []:
 
     for i in values:
         if i[0] != current_bpm:
-            result.append((current_bpm, np.mean(gsr), i[2], i[3]))
-            gsr = []
+            if len(gsr) == 0:
+                result.append((i[0], i[1], i[2], i[3]))
+            else:
+                result.append((current_bpm, np.mean(gsr), i[2], i[3]))
+                gsr = []
             current_bpm = i[0]
         else:
             gsr.append(i[1])
@@ -81,7 +86,6 @@ def __save_tuples(tuples: [], file: str):
 
 def __load_tuples(file: str):
     data = pandas.read_csv(file, sep=",")
-    print(data.head())
     return data.values
 
 
@@ -106,8 +110,8 @@ def __make_tuples(file: str, stat_verbose=False) -> []:
             new_percent_done = int(round((rows_done / total_rows) * 100))
             if new_percent_done > percent_done:
                 percent_done = new_percent_done
-                # if percent_done >= 50:
-                #     break
+                if percent_done >= 60:
+                    break
                 print(f"{percent_done}% done")
 
     __save_tuples(result, "final.csv")
@@ -129,25 +133,34 @@ def __get_models():
     #models.append(('LR', LogisticRegression())) # does not accept non-integer values
 
     # Nu Support Vector Regression
-    models.append(('NuSVR', NuSVR(nu=0.45)))
+    models.append(('NuSVR', NuSVR()))
 
     # Epsilon-Support Vector Regression
-    models.append(('SVR', SVR()))
+    #models.append(('SVR', SVR(C=1.5, epsilon=0.05)))
 
     # Linear Support Vector Regression
-    models.append(('LinearSVR', LinearSVR()))
+    #models.append(('LinearSVR', LinearSVR()))
 
     # Multi-layer Perceptron regressor
-    models.append(('MLPRegressor', MLPRegressor()))
+    models.append(('MLPRegressor', MLPRegressor(solver="lbfgs")))
 
     return models
 
 
-def validate_models():
-    (x, y) = __load_file(stat_verbose=True)
+def __choose_best_model(names: [], results: []):
+    max = -float("inf")
+    ptr = -1
 
-    for i in x:
-        print(i)
+    for i in range(len(names)):
+        if results[i].mean() > max:
+            ptr = i
+            max = results[i].mean()
+
+    return names[ptr]
+
+
+def validate_models():
+    (x, y) = __load_file(stat_verbose=True, y_value="valence")
 
     validation_size = 0.15
     seed = 7
@@ -165,6 +178,15 @@ def validate_models():
 
         cv_results = model_selection.cross_val_score(model, x_train, y_train, cv=kfold, scoring="r2")
         results.append(cv_results)
-        names.append(name)
+        names.append((name, model))
         msg = "%s: mean: %f , std: %f" % (name, cv_results.mean(), cv_results.std())
         print(msg)
+
+    name, model = __choose_best_model(names, results)
+    print(f"Best model is {name}")
+
+    model.fit(x_train, y_train)
+    predictions = model.predict(x_validation)
+
+    scored_value = r2_score(y_validation, predictions)
+    print(f"Accuracy score is: {scored_value}")

@@ -36,7 +36,7 @@ def process_person(path):
             ohm_to_microsiemens(__get_file_name(path + "/eHealth", "GSR"), path + "/output/GSR.csv")
         elif "Empatica" in sensors:
             nanowatt_to_beats(__get_file_name(path + "/Empatica", "BVP"), path + "/output/BPM.csv")
-            sec_to_millisec(__get_file_name(path + "/Empatica", "GSR"), path + "/output/GSR.csv", sep=";", mean=True)
+            sec_to_millisec(__get_file_name(path + "/Empatica", "GSR"), path + "/output/GSR.csv", sep=";", mean=True, multiply=True)
         elif "eHealth" in sensors:
             diff_values(__get_file_name(path + "/eHealth", "BPM"), path + "/output/BPM.csv")
             ohm_to_microsiemens(__get_file_name(path + "/eHealth", "GSR"), path + "/output/GSR.csv")

@@ -17,6 +17,9 @@ def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
             timestamp *= 1000
         result.append((timestamp, __ohm_to_microsiemens_value(i[1])))
 
+    for i in result:
+        print(i)
+
     result = __values_to_diffs(result, take_mean=True)
 
     __save_to_file(output_file, result)
@@ -24,7 +27,7 @@ def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
 
 # converts single value in ohm to microsiemens
 def __ohm_to_microsiemens_value(ohm):
-    return (1/ohm)*1000000.0
+    return (1/(ohm*1000.0))*1000000.0
 
 
 # converts values in input_file from nanowatt to bpm and saves them to output_file
@@ -43,6 +46,7 @@ def nanowatt_to_beats(input_file, output_file):
 def microvolt_to_beats(input_file, output_file):
     heart = pandas.read_csv(input_file, sep=',', dtype={"value": float})
 
+    # this is stupid but it works, don't kill me
     if "B398" in input_file:
         limit = 630
     else:
@@ -68,7 +72,7 @@ def microvolt_to_beats(input_file, output_file):
     __save_to_file(output_file, results)
 
 
-def sec_to_millisec(input_file, output_file, sep=",", mean=False):
+def sec_to_millisec(input_file, output_file, sep=",", mean=False, multiply=False):
     """"
     converts timestamps in input_file from seconds to milliseconds while also
      taking mean with window of 5 and saves them to output_file
@@ -78,7 +82,10 @@ def sec_to_millisec(input_file, output_file, sep=",", mean=False):
     result = []
 
     for i in heart.values:
-        result.append((i[0]*1000, i[1]))
+        if multiply:
+            result.append((i[0]*1000, i[1]*1000.0))
+        else:
+            result.append((i[0] * 1000, i[1]))
 
     if mean:
         result = __values_to_diffs(result, take_mean=True)
@@ -175,7 +182,7 @@ def __dialistic_points_to_beats(points):
 # converts list of (timestamp, value) to list of (timestamp, avg-value)
 def __values_to_diffs(values: [], take_mean=False):
     if take_mean:
-        values = __mean_data(values, 100)
+        values = __mean_data(values, 10)
     originals = []
     for i in values:
         originals.append(i[1])
