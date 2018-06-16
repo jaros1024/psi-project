@@ -9,6 +9,22 @@ from sklearn.svm import SVR
 from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import r2_score
 from pathlib import Path
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import make_moons, make_circles, make_classification
+from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+
+
+
 import numpy as np
 
 
@@ -129,20 +145,41 @@ def __is_gsr_valid(gsr) -> bool:
 def __get_models():
     models = []
 
-    # Ordinary least squares Linear Regression
-    #models.append(('LR', LogisticRegression())) # does not accept non-integer values
+    # models.append(('Nearest Neighbors', KNeighborsClassifier(3)))
+    #
+    #
+    # models.append(('Linear SVM',SVC(kernel="linear", C=0.025)))
+    #
+    #
+    # models.append(('Linear SVM', SVC(kernel="linear", C=0.025)))
+    #
+    #
+    # models.append(('Nearest Neighbors', KNeighborsClassifier(3)))
+    #
+    #
+    # models.append(('Linear SVM', SVC(kernel="linear", C=0.025)))
+    #
+    #
+    # models.append(('RBF SVM', SVC(gamma=2, C=1)))
+    #
+    #
+    # models.append(('Gaussian Process', GaussianProcessClassifier(1.0 * RBF(1.0))))
+    #
+    #
+    # models.append(('Decision Tree', DecisionTreeClassifier(max_depth=5)))
+    #
+    #
+    # models.append(('Random Forest', RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)))
+    #
+    #
+    # models.append(('Neural Net', MLPClassifier(alpha=1)))
+    #
+    #
+    # models.append(('AdaBoost', AdaBoostClassifier()))
+    #
+    #
+    # models.append(('Naive Bayes', GaussianNB()))
 
-    # Nu Support Vector Regression
-    models.append(('NuSVR', NuSVR()))
-
-    # Epsilon-Support Vector Regression
-    #models.append(('SVR', SVR(C=1.5, epsilon=0.05)))
-
-    # Linear Support Vector Regression
-    #models.append(('LinearSVR', LinearSVR()))
-
-    # Multi-layer Perceptron regressor
-    models.append(('MLPRegressor', MLPRegressor(solver="lbfgs")))
 
     return models
 
@@ -159,11 +196,10 @@ def __choose_best_model(names: [], results: []):
     return names[ptr]
 
 
-def validate_models():
+def validate_models(validation_size,seed):
     (x, y) = __load_file(stat_verbose=True, y_value="valence")
 
-    validation_size = 0.15
-    seed = 7
+
 
     print("Creating training and validation lists")
     x_train, x_validation, y_train, y_validation = model_selection.train_test_split(x, y, test_size=validation_size,
@@ -190,3 +226,5 @@ def validate_models():
 
     scored_value = r2_score(y_validation, predictions)
     print(f"Accuracy score is: {scored_value}")
+
+    return scored_value
