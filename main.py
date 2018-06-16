@@ -81,4 +81,4 @@ if __name__ == '__main__':
     #d_frame.to_csv(data_output_path, encoding='utf-8')
     # data = proc.extract_data_for_single_image(sample_root + '/B303')
     # plot.plot_all_in_dict(data)
-    models.validate_models()
+    models.validate_models(0.20, 5)

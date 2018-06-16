@@ -24,6 +24,10 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import  LinearSVC
+from sklearn.linear_model import SGDClassifier
 
 import numpy as np
 import lib.emotions as emotions
@@ -145,7 +149,7 @@ def __get_models():
     # models.append(('Nearest Neighbors', KNeighborsClassifier(3)))
     #
     #
-    # models.append(('Linear SVM',SVC(kernel="linear", C=0.025)))
+    #models.append(('Linear SVM', SVC(kernel="linear", C=0.025)))
     #
     #
     # models.append(('Linear SVM', SVC(kernel="linear", C=0.025)))
@@ -159,23 +163,27 @@ def __get_models():
     #
     # models.append(('RBF SVM', SVC(gamma=2, C=1)))
     #
-    #
-    # models.append(('Gaussian Process', GaussianProcessClassifier(1.0 * RBF(1.0))))
-    #
-    #
-    # models.append(('Decision Tree', DecisionTreeClassifier(max_depth=5)))
+    #requires to much ram..
+    #models.append(('Gaussian Process', GaussianProcessClassifier(1.0 * RBF(1.0))))
     #
     #
-    # models.append(('Random Forest', RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1)))
+    #models.append(('Decision Tree', DecisionTreeClassifier(max_depth=6)))
     #
     #
-    # models.append(('Neural Net', MLPClassifier(alpha=1)))
+    #models.append(('Random Forest', RandomForestClassifier(max_depth=8, n_estimators=10, max_features=1 ,n_jobs=-1)))
     #
     #
-    # models.append(('AdaBoost', AdaBoostClassifier()))
+    #models.append(('Neural Net', MLPClassifier(hidden_layer_sizes=(4,20,10,5))))
     #
     #
-    # models.append(('Naive Bayes', GaussianNB()))
+    #models.append(('AdaBoost', AdaBoostClassifier(n_estimators=300)))
+    #
+    #
+    #models.append(('Naive Bayes', GaussianNB()))
+    #
+    #models.append(('Gradient boosting', GradientBoostingClassifier()))
+    #
+    #models.append(('linear svm', LinearSVC()))
 
 
     return models
@@ -184,16 +192,14 @@ def __get_models():
 def __choose_best_model(names: [], results: []):
     max = -float("inf")
     ptr = -1
-
     for i in range(len(names)):
         if results[i].mean() > max:
             ptr = i
             max = results[i].mean()
-
     return names[ptr]
 
 
-def validate_models(validation_size,seed):
+def validate_models(validation_size, seed):
     (x, y) = __load_file(stat_verbose=True)
 
 
@@ -201,6 +207,7 @@ def validate_models(validation_size,seed):
     print("Creating training and validation lists")
     x_train, x_validation, y_train, y_validation = model_selection.train_test_split(x, y, test_size=validation_size,
                                                                                     random_state=seed)
+
     models = __get_models()
 
     results = []
