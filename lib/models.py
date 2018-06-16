@@ -1,22 +1,18 @@
 import pandas
 import ast
 from sklearn import model_selection
-from sklearn.linear_model import LogisticRegression
-from sklearn.neural_network import MLPRegressor
-from sklearn.svm import LinearSVR
-from sklearn.svm import NuSVR
-from sklearn.svm import SVR
-from sklearn.linear_model import SGDRegressor
-from sklearn.metrics import r2_score
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
 from pathlib import Path
 import numpy as np
+import lib.emotions as emotions
 
 
 FINAL_DATA_FILE = "final.csv"
 PROCESSED_DATA_FILE = "processed.csv"
 
 
-def __load_file(stat_verbose=False, y_value="valence"):
+def __load_file(stat_verbose=False):
     tuple_file = Path(FINAL_DATA_FILE)
     if tuple_file.exists():
         result = __load_tuples(FINAL_DATA_FILE)
@@ -28,10 +24,7 @@ def __load_file(stat_verbose=False, y_value="valence"):
 
     for i in result:
         x.append([i[0], i[1]])
-        if y_value == "valence":
-            y.append(i[2])
-        elif y_value == "arousal":
-            y.append(i[3])
+        y.append(emotions.emotion_data_to_class(i[2], i[3]))
 
     print("Second loop done")
     print(f"Number of examples: {len(x)}")
@@ -110,8 +103,8 @@ def __make_tuples(file: str, stat_verbose=False) -> []:
             new_percent_done = int(round((rows_done / total_rows) * 100))
             if new_percent_done > percent_done:
                 percent_done = new_percent_done
-                if percent_done >= 60:
-                    break
+                # if percent_done >= 60:
+                #     break
                 print(f"{percent_done}% done")
 
     __save_tuples(result, "final.csv")
@@ -129,20 +122,8 @@ def __is_gsr_valid(gsr) -> bool:
 def __get_models():
     models = []
 
-    # Ordinary least squares Linear Regression
-    #models.append(('LR', LogisticRegression())) # does not accept non-integer values
-
-    # Nu Support Vector Regression
-    models.append(('NuSVR', NuSVR()))
-
-    # Epsilon-Support Vector Regression
-    #models.append(('SVR', SVR(C=1.5, epsilon=0.05)))
-
-    # Linear Support Vector Regression
-    #models.append(('LinearSVR', LinearSVR()))
-
-    # Multi-layer Perceptron regressor
-    models.append(('MLPRegressor', MLPRegressor(solver="lbfgs")))
+    # C-Support Vector Classification.
+    models.append(('SVC', SVC()))
 
     return models
 
@@ -160,7 +141,7 @@ def __choose_best_model(names: [], results: []):
 
 
 def validate_models():
-    (x, y) = __load_file(stat_verbose=True, y_value="valence")
+    (x, y) = __load_file(stat_verbose=True)
 
     validation_size = 0.15
     seed = 7
@@ -176,7 +157,7 @@ def validate_models():
         print(f"Validating model {name}")
         kfold = model_selection.KFold(n_splits=10, random_state=seed)
 
-        cv_results = model_selection.cross_val_score(model, x_train, y_train, cv=kfold, scoring="r2")
+        cv_results = model_selection.cross_val_score(model, x_train, y_train, cv=kfold, scoring="accuracy")
         results.append(cv_results)
         names.append((name, model))
         msg = "%s: mean: %f , std: %f" % (name, cv_results.mean(), cv_results.std())
@@ -188,5 +169,5 @@ def validate_models():
     model.fit(x_train, y_train)
     predictions = model.predict(x_validation)
 
-    scored_value = r2_score(y_validation, predictions)
+    scored_value = accuracy_score(y_validation, predictions)
     print(f"Accuracy score is: {scored_value}")
