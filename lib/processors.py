@@ -43,7 +43,7 @@ def extract_data_for_single_image(path, time_range=10, keep_timestamp=True):
     gsr_data = pandas.read_csv(gsr_filepath, sep=',', dtype=my_dtype).values if os.path.isfile(gsr_filepath) else []
     for index, image in enumerate(images_data):
         name = _get_filename(image[0])
-        start_time = image[1]
+        start_time = image[1] + 5000 # timeshift 500 ms
         if index + 1 < len(images_data):
             next_start_time = images_data[index + 1][1]
         else:
