@@ -10,10 +10,6 @@ from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import r2_score
 from pathlib import Path
 
-from sklearn.ensemble import GradientBoostingClassifier
-
-from sklearn.base import BaseEstimator
-from sklearn.ensemble import BaggingClassifier,ExtraTreesClassifier,GradientBoostingClassifier,VotingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import make_moons, make_circles, make_classification
@@ -28,6 +24,10 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import  LinearSVC
+from sklearn.linear_model import SGDClassifier
 
 import numpy as np
 import lib.emotions as emotions
@@ -145,64 +145,51 @@ def __is_gsr_valid(gsr) -> bool:
 
 def __get_models():
     models = []
+
+
+    #models.append(('Linear SVM', SVC(kernel="linear", C=0.025)))
     #
-    # models.append(('Linear SVM',SVC(kernel="linear", C=0.025)))
     #
-    #
+    # models.append(('Linear SVM', SVC(kernel="linear", C=0.025)))
     #
     #
     # models.append(('RBF SVM', SVC(gamma=2, C=1)))
     #
     #
-    #models.append(('Gaussian Process', GaussianProcessClassifier(1.0 * RBF(1.0))))
     #
-    #
-   # models.append(('Decision Tree', DecisionTreeClassifier(max_depth=5,min_samples_split=0.012,min_samples_leaf=0.001)))
+    #models.append(('Decision Tree', DecisionTreeClassifier(max_depth=5,min_samples_split=0.012,min_samples_leaf=0.001)))
     # #
     # #
     #models.append(('Random Forest', RandomForestClassifier(max_depth=8, n_estimators=100, max_features='auto',min_samples_split =3)))
     # #
     # #
-    #models.append(('Neural Net', MLPClassifier(alpha=6)))
+    # models.append(('Neural Net', MLPClassifier(hidden_layer_sizes=(4,20,10,5))))
     # #
     # #
-    #models.append(('AdaBoost', AdaBoostClassifier()))
+    # models.append(('AdaBoost', AdaBoostClassifier(n_estimators=300)))
     # #
     # #
     #models.append(('Naive Bayes', GaussianNB()))
 
-    #models.append(('Elo', MLPClassifier(solver='lbfgs', alpha=1e-5,
-    #               hidden_layer_sizes=(10, 6), random_state=2),))
+    # models.append(('Bagging',BaggingClassifier(base_estimator=None, n_estimators=10, max_samples=1.0, max_features=1.0, bootstrap=True, bootstrap_features=False, oob_score=False, warm_start=False, n_jobs=1, random_state=None, verbose=0)))
+    # models.append(('ExtraTree',ExtraTreesClassifier()))  models.append(('GradientBoosting',GradientBoostingClassifier()))
 
-   # models.append(('Bagging',BaggingClassifier(base_estimator=None, n_estimators=10, max_samples=1.0, max_features=1.0, bootstrap=True, bootstrap_features=False, oob_score=False, warm_start=False, n_jobs=1, random_state=None, verbose=0)))
-    # models.append(('voting',VotingClassifier(estimators='1')))
-    #models.append(('ExtraTree',ExtraTreesClassifier()))  models.append(('GradientBoosting',GradientBoostingClassifier()))
-    models.append(('GradientBoosting',GradientBoostingClassifier()))
+    models.append(('GradientBoosting', GradientBoostingClassifier()))
+
     return models
 
 
 def __choose_best_model(names: [], results: []):
     max = -float("inf")
     ptr = -1
-
     for i in range(len(names)):
         if results[i].mean() > max:
             ptr = i
             max = results[i].mean()
-
     return names[ptr]
 
 
-def validate_models():
-    # validation_size=0.06
-    # seed=1  forest
-
-    # validation_size = 0.0578
-    # seed=3    ada
-
-    validation_size=0.20
-    seed = 5
-
+def validate_models(validation_size, seed):
     (x, y) = __load_file(stat_verbose=True)
 
 

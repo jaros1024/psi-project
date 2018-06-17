@@ -76,37 +76,9 @@ if __name__ == '__main__':
     #convert_data(SAMPLE_ROOT)
     #d_frame = proc.merge_bpm_and_csr(SAMPLE_ROOT)
 
-    # save to file
+    #save to file
     #data_output_path = op.join(SAMPLE_ROOT, 'processed.csv')
     #d_frame.to_csv(data_output_path, encoding='utf-8')
     #data = proc.extract_data_for_single_image(SAMPLE_ROOT + '/B303')
     #plot.plot_all_in_dict(data)
     models.validate_models()
-
-
-
-
-    # validation_size = 0.14857142857142858
-    # seed = 10
-    # best=0
-    # best_v=validation_size
-    # current=0
-    # times=1
-    # step=1
-    # print('walidacja '+str(validation_size)+' seed '+str(seed))
-    # while 1!=2:
-    #     print('walidacja' + str(validation_size))
-    #     current=models.validate_models(validation_size,seed)
-    #     if(current<best):
-    #         best=current
-    #         best_v=validation_size
-    #         times=1
-    #     else:
-    #         times+=3
-    #     if(times>9):
-    #         times=1
-    #         step=-step/2
-    #     validation_size=best_v + step*(0.01/times)
-    #
-    #     print(current)
-    #     print(best)
