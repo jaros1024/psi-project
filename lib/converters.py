@@ -1,11 +1,12 @@
 import pandas
-from statistics import mean
+from statistics import mean, StatisticsError
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
     """"
-    converts values in input_file from ohm to microseconds while prevoiusly counting mean
+    converts values in input_file from ohm to microseconds while previously counting mean
     for every 5 values and saves them to output_file
     """
     skin_data = pandas.read_csv(input_file, sep=sep, dtype={"value": float})
@@ -16,14 +17,17 @@ def ohm_to_microsiemens(input_file, output_file, unit="millisec", sep=","):
             timestamp *= 1000
         result.append((timestamp, __ohm_to_microsiemens_value(i[1])))
 
-    result = __values_to_diffs(result,take_mean=True)
+    for i in result:
+        print(i)
+
+    result = __values_to_diffs(result, take_mean=True)
 
     __save_to_file(output_file, result)
 
 
 # converts single value in ohm to microsiemens
 def __ohm_to_microsiemens_value(ohm):
-    return (1/ohm)*1000000.0
+    return (1/(ohm*1000.0))*1000000.0
 
 
 # converts values in input_file from nanowatt to bpm and saves them to output_file
@@ -33,7 +37,7 @@ def nanowatt_to_beats(input_file, output_file):
     extremes = __get_local_extremes(heart.values)
     diastolic_points = __get_diastolic_points(extremes)
     bpm = __dialistic_points_to_beats(diastolic_points)
-    bpm = __values_to_diffs(bpm, take_mean=True)
+    bpm = __values_to_diffs(bpm)
 
     __save_to_file(output_file, bpm)
 
@@ -42,19 +46,25 @@ def nanowatt_to_beats(input_file, output_file):
 def microvolt_to_beats(input_file, output_file):
     heart = pandas.read_csv(input_file, sep=',', dtype={"value": float})
 
+    # this is stupid but it works, don't kill me
+    if "B398" in input_file:
+        limit = 630
+    else:
+        limit = 700
+
     results = []
 
     last_beat = 0
     is_beat = False
     for i in heart.values:
-        if i[1] >= 700 and not is_beat:
+        if i[1] >= limit and not is_beat:
             if last_beat != 0:
                 bpm = __interval_to_bpm(i[0] - last_beat)
                 if 50 < bpm < 150:
                     results.append((i[0], round(bpm, 2)))
             last_beat = i[0]
             is_beat = True
-        if i[1] <= 700 and is_beat:
+        if i[1] <= limit and is_beat:
             is_beat = False
 
     results = __values_to_diffs(results)
@@ -62,7 +72,7 @@ def microvolt_to_beats(input_file, output_file):
     __save_to_file(output_file, results)
 
 
-def sec_to_millisec(input_file, output_file, sep=",", mean=False):
+def sec_to_millisec(input_file, output_file, sep=",", mean=False, multiply=False):
     """"
     converts timestamps in input_file from seconds to milliseconds while also
      taking mean with window of 5 and saves them to output_file
@@ -72,7 +82,10 @@ def sec_to_millisec(input_file, output_file, sep=",", mean=False):
     result = []
 
     for i in heart.values:
-        result.append((i[0]*1000, i[1]))
+        if multiply:
+            result.append((i[0]*1000, i[1]*1000.0))
+        else:
+            result.append((i[0] * 1000, i[1]))
 
     if mean:
         result = __values_to_diffs(result, take_mean=True)
@@ -169,12 +182,13 @@ def __dialistic_points_to_beats(points):
 # converts list of (timestamp, value) to list of (timestamp, avg-value)
 def __values_to_diffs(values: [], take_mean=False):
     if take_mean:
-        values = __mean_data(values, 5)
+        values = __mean_data(values, 10)
     originals = []
     for i in values:
         originals.append(i[1])
 
     avg = mean(originals)
+
     results = []
 
     for i in values:
@@ -183,14 +197,15 @@ def __values_to_diffs(values: [], take_mean=False):
     return results
 
 
-def __mean_data(data:[], window_size:int) -> []:
+def __mean_data(data: [], window_size: int) -> []:
     total_len = len(data)
     index = 0
     out = []
     while index + window_size < total_len:
-        chunk = data[index : index + window_size]
+        chunk = data[index:(index + window_size)]
         middle_time = data[(2*index + window_size) // 2][0]
-        mean = np.mean(chunk[:,1])
+        #mean = np.mean(chunk[:, 1])
+        mean = np.mean([i[1] for i in chunk])
         out.append(np.asarray([middle_time, mean]))
         index = index + window_size
     return out
