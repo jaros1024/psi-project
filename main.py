@@ -1,19 +1,13 @@
 import os
 
-import numpy as np
 
-from statistics import StatisticsError
 from lib.converters import *
 import lib.image_processing
-import lib.plotters as plot
-import lib.processors as proc
 import lib.models as models
 import os.path as op
-import pandas
 
 
 SAMPLE_ROOT = '2018-afcai-spring'
-output_root='2018-asia-winter'
 
 
 
@@ -81,4 +75,4 @@ if __name__ == '__main__':
     #d_frame.to_csv(data_output_path, encoding='utf-8')
     #data = proc.extract_data_for_single_image(SAMPLE_ROOT + '/B303')
     #plot.plot_all_in_dict(data)
-    models.validate_models()
+    models.validate_models(0.20,5)

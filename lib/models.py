@@ -1,33 +1,17 @@
 import pandas
 import ast
 from sklearn import model_selection
-from sklearn.linear_model import LogisticRegression
-from sklearn.neural_network import MLPRegressor
-from sklearn.svm import LinearSVR
-from sklearn.svm import NuSVR
-from sklearn.svm import SVR
-from sklearn.linear_model import SGDRegressor
-from sklearn.metrics import r2_score
 from pathlib import Path
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.datasets import make_moons, make_circles, make_classification
+
 from sklearn.neural_network import MLPClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, ExtraTreesClassifier, BaggingClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
 from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import  LinearSVC
-from sklearn.linear_model import SGDClassifier
+
 
 import numpy as np
 import lib.emotions as emotions
@@ -146,35 +130,27 @@ def __is_gsr_valid(gsr) -> bool:
 def __get_models():
     models = []
 
-
-    #models.append(('Linear SVM', SVC(kernel="linear", C=0.025)))
-    #
-    #
     # models.append(('Linear SVM', SVC(kernel="linear", C=0.025)))
-    #
     #
     # models.append(('RBF SVM', SVC(gamma=2, C=1)))
     #
-    #
-    #
     #models.append(('Decision Tree', DecisionTreeClassifier(max_depth=5,min_samples_split=0.012,min_samples_leaf=0.001)))
-    # #
-    # #
-    #models.append(('Random Forest', RandomForestClassifier(max_depth=8, n_estimators=100, max_features='auto',min_samples_split =3)))
-    # #
-    # #
+    #
+    # models.append(('Random Forest', RandomForestClassifier(max_depth=8, n_estimators=100, max_features='auto',min_samples_split =3)))
+    #
     # models.append(('Neural Net', MLPClassifier(hidden_layer_sizes=(4,20,10,5))))
-    # #
-    # #
+    #
     # models.append(('AdaBoost', AdaBoostClassifier(n_estimators=300)))
-    # #
-    # #
-    #models.append(('Naive Bayes', GaussianNB()))
-
+    #
+    # models.append(('Naive Bayes', GaussianNB()))
+    #
     # models.append(('Bagging',BaggingClassifier(base_estimator=None, n_estimators=10, max_samples=1.0, max_features=1.0, bootstrap=True, bootstrap_features=False, oob_score=False, warm_start=False, n_jobs=1, random_state=None, verbose=0)))
-    # models.append(('ExtraTree',ExtraTreesClassifier()))  models.append(('GradientBoosting',GradientBoostingClassifier()))
-
-    models.append(('GradientBoosting', GradientBoostingClassifier()))
+    #
+    # models.append(('ExtraTree',ExtraTreesClassifier()))
+    #
+    #models.append(('GradientBoosting', GradientBoostingClassifier(max_depth=6,min_samples_split=0.0001)))
+    #
+    #models.append(('Decision Tree', DecisionTreeClassifier(max_depth=6, criterion="entropy", min_samples_split=30))) JARKA
 
     return models
 
